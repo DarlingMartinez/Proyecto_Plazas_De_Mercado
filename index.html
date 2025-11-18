@@ -211,6 +211,19 @@ if (step === 1) {
     }
 }
 
+const localidad = document.getElementById("localidad").value;
+const plaza = document.getElementById("plaza").value;
+
+if (!localidad) {
+    alert("Por favor seleccione una localidad antes de continuar.");
+    return;
+}
+
+if (!plaza) {
+    alert("Por favor seleccione una plaza antes de continuar.");
+    return;
+}
+
 if (step === 2) {
     const tipo = document.getElementById("tipoPunto").value;
     if (!tipo) { alert("Seleccione un tipo de punto."); return; }
