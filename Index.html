@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Encuesta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .step {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .btn {
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        .btn:disabled {
+            background: gray;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Formulario de Encuesta</h2>
+
+        <!-- Paso 1: Datos iniciales -->
+        <div class="step active" id="step1">
+            <label>Fecha:</label>
+            <input type="date" id="fecha">
+
+            <label>Localidad:</label>
+            <input type="text" id="localidad" placeholder="Ingrese la localidad">
+
+            <label>Plaza:</label>
+            <input type="text" id="plaza" placeholder="Ingrese la plaza">
+
+            <button class="btn" onclick="nextStep(1)">Siguiente</button>
+        </div>
+
+        <!-- Paso 2: Tipo de punto encuestado -->
+        <div class="step" id="step2">
+            <label>Seleccione el tipo de punto a encuestar:</label>
+            <select id="tipoPunto">
+                <option value="">Seleccione...</option>
+                <option value="plaza">Módulo / Local dentro de la plaza</option>
+                <option value="externo">Local externo</option>
+            </select>
+
+            <button class="btn-secondary btn" onclick="prevStep(2)">Atrás</button>
+            <button class="btn" onclick="nextStep(2)">Siguiente</button>
+        </div>
+
+        <!-- Paso 3-A: Local dentro de la plaza -->
+        <div class="step" id="step3_plaza">
+            <label>Número del local:</label>
+            <input type="text" id="numLocal" placeholder="Ingrese el número del módulo/local">
+
+            <p>En este ejemplo no cargamos productos aún; más adelante se agregan.</p>
+
+            <button class="btn-secondary btn" onclick="prevStep(3)">Atrás</button>
+            <button class="btn" onclick="submitForm()">Enviar</button>
+        </div>
+
+        <!-- Paso 3-B: Local externo -->
+        <div class="step" id="step3_externo">
+            <label>Nombre o referencia del local externo:</label>
+            <input type="text" id="refLocalExterno" placeholder="Ingrese referencia del local">
+
+            <p>Aquí más adelante añadiremos productos y precios.</p>
+
+            <button class="btn-secondary btn" onclick="prevStep(3)">Atrás</button>
+            <button class="btn" onclick="submitForm()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+
+        function nextStep(step) {
+            if (step === 2) {
+                const tipo = document.getElementById("tipoPunto").value;
+                if (!tipo) { alert("Seleccione un tipo de punto."); return; }
+                document.getElementById("step2").classList.remove("active");
+                if (tipo === "plaza") {
+                    document.getElementById("step3_plaza").classList.add("active");
+                } else {
+                    document.getElementById("step3_externo").classList.add("active");
+                }
+            } else {
+                document.getElementById("step" + step).classList.remove("active");
+                document.getElementById("step" + (step + 1)).classList.add("active");
+            }
+        }
+
+        function prevStep(step) {
+            if (step === 3) {
+                document.getElementById("step2").classList.add("active");
+                document.getElementById("step3_plaza").classList.remove("active");
+                document.getElementById("step3_externo").classList.remove("active");
+            } else {
+                document.getElementById("step" + step).classList.remove("active");
+                document.getElementById("step" + (step - 1)).classList.add("active");
+            }
+        }
+
+        function submitForm() {
+            const data = {
+                fecha: document.getElementById("fecha").value,
+                localidad: document.getElementById("localidad").value,
+                plaza: document.getElementById("plaza").value,
+                tipoPunto: document.getElementById("tipoPunto").value,
+                localPlaza: document.getElementById("numLocal").value || null,
+                localExterno: document.getElementById("refLocalExterno").value || null
+            };
+
+            console.log("Datos listos para enviar a Firebase:", data);
+            alert("Formulario enviado (simulación). Listo para conectar con Firebase.");
+        }
+    </script>
+</body>
+</html>
