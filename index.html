@@ -293,12 +293,16 @@
                 </select>
 
                 <label>Procedencia:</label>
-                <select id="procedencia" style="width:100%; padding:6px;">
-                    <option value="">Seleccione procedencia</option>
-                    <option value="BOGOTÁ">BOGOTÁ</option>
-                    <option value="CUNDINAMARCA">CUNDINAMARCA</option>
-                    <option value="OTRO">OTRO</option>
-                </select>
+<select id="procedencia" style="width:100%; padding:6px;" onchange="manejarProcedencia()">
+    <option value="">Seleccione procedencia</option>
+    <option value="BOGOTÁ">BOGOTÁ</option>
+    <option value="CUNDINAMARCA">CUNDINAMARCA</option>
+    <option value="OTRO">OTRO</option>
+</select>
+
+<div id="campoProcedenciaOtro" style="display:none; margin-top: 5px;">
+    <input type="text" id="procedenciaOtro" placeholder="Especifique el municipio/departamento" style="width:100%; padding:6px;">
+</div>
                 
                 <label>Frecuencia de compra:</label>
                 <select id="frecuenciaCompra" style="width:100%; padding:6px;">
@@ -563,7 +567,18 @@
                 editarProducto(index);
             }
         }
+        
+function manejarProcedencia() {
+    const procedencia = document.getElementById("procedencia").value;
+    const campoOtro = document.getElementById("campoProcedenciaOtro");
 
+    if (procedencia === 'OTRO') {
+        campoOtro.style.display = 'block';
+    } else {
+        campoOtro.style.display = 'none';
+        document.getElementById("procedenciaOtro").value = ''; // Limpiar campo si se cambia
+    }
+}
 
         function cerrarModalProducto() {
             document.getElementById("modalProducto").style.display = "none";
