@@ -202,9 +202,8 @@
                     <th>Grupo</th>
                     <th>Producto</th>
                     <th>Canasta</th>
-                    <th>Precio / Peso</th>
-                    <th>Unidad</th>
-                    <th>Cantidad</th>
+                    <th style="background:#e0f7fa;">Abastecimiento</th>
+                    <th style="background:#fff3e0;">Venta</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -259,20 +258,44 @@
             <p id="avisoCanasta" style="display:none; font-weight:bold; margin-top:5px; color:red;"></p>
 
             <div id="camposLocalPlaza" style="display:none;">
-                <label>Peso (libras):</label>
-                <input type="number" id="pesoLibras" placeholder="Ej: 5" min="0" step="any" style="width:100%; padding:6px;">
 
-                <label>Unidad de medida (Kg, Lb, Unit):</label>
-                <select id="unidadMedida" style="width:100%; padding:6px;">
-                    <option value="">Seleccione unidad de medida</option>
-                    <option value="Kg">Kilogramos</option>
-                    <option value="Lb">Libras</option>
+                <h4 style="border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px;">Datos de **Abastecimiento**</h4>
+                
+                <label>Unidad de medida:</label>
+                <select id="unidadMedidaAbastecimiento" style="width:100%; padding:6px;">
+                    <option value="">Seleccione unidad</option>
+                    <option value="Lb">Libra</option>
+                    <option value="Kg">Kilo</option>
+                    <option value="Lt">Litro</option>
                     <option value="Unit">Unidad</option>
                 </select>
+
+                <label>Peso/Volumen:</label>
+                <input type="number" id="pesoValorAbastecimiento" placeholder="Ej: 5" min="0" step="any" style="width:100%; padding:6px;">
 
                 <label>Cantidad:</label>
                 <input type="number" id="cantidad" placeholder="Ej: 10" min="1" style="width:100%; padding:6px;">
 
+                <label>Unidad de empaque (Abastecimiento):</label>
+                <select id="unidadEmpaqueAbastecimiento" style="width:100%; padding:6px;">
+                    <option value="">Seleccione una unidad de empaque</option>
+                    <option value="ATADO">ATADO</option>
+                    <option value="BULTO">BULTO</option>
+                    <option value="CAJA">CAJA</option>
+                    <option value="CANASTA">CANASTA</option>
+                    <option value="GUACAL">GUACAL</option>
+                    <option value="BOLSA">BOLSA</option>
+                    <option value="OTRO">OTRO</option>
+                </select>
+
+                <label>Procedencia:</label>
+                <select id="procedencia" style="width:100%; padding:6px;">
+                    <option value="">Seleccione procedencia</option>
+                    <option value="BOGOTÁ">BOGOTÁ</option>
+                    <option value="CUNDINAMARCA">CUNDINAMARCA</option>
+                    <option value="OTRO">OTRO</option>
+                </select>
+                
                 <label>Frecuencia de compra:</label>
                 <select id="frecuenciaCompra" style="width:100%; padding:6px;">
                     <option value="">Seleccione frecuencia</option>
@@ -283,9 +306,18 @@
                 </select>
 
                 <div id="camposCanastaPlaza" style="display:none;">
-                    <h4 style="border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px;">Datos adicionales de productos de la canasta familiar</h4>
+                    <h4 style="border-top: 1px solid #ccc; padding-top: 10px; margin-top: 15px;">Datos de **Venta** (Productos de Canasta Familiar)</h4>
+                    
                     <label>Precio de venta:</label>
                     <input type="number" id="precioVentaCanasta" placeholder="Ej: 3500" min="0" style="width:100%; padding:6px;">
+
+                    <label>Unidad de medida (Kg, Lb, Unit):</label>
+                    <select id="unidadMedidaCanasta" style="width:100%; padding:6px;">
+                        <option value="">Seleccione unidad de medida</option>
+                        <option value="Kg">Kilogramos</option>
+                        <option value="Lb">Libras</option>
+                        <option value="Unit">Unidad</option>
+                    </select>
 
                     <label>Unidad de empaque:</label>
                     <select id="unidadEmpaqueCanasta" style="width:100%; padding:6px;">
@@ -301,7 +333,6 @@
                     </select>
                 </div>
             </div>
-
             <div id="camposLocalExterno" style="display:none;">
                 <label>Precio de venta:</label>
                 <input type="number" id="precioVentaExterno" placeholder="Ej: 3500" min="0" style="width:100%; padding:6px;">
@@ -495,13 +526,18 @@
                 document.getElementById("producto").value = "";
                 document.getElementById("avisoCanasta").style.display = "none";
 
-                // Limpiar campos de Local Plaza
-                document.getElementById("pesoLibras").value = "";
-                document.getElementById("unidadMedida").value = "";
+                // Limpiar campos de Local Plaza (Abastecimiento)
+                document.getElementById("unidadMedidaAbastecimiento").value = "";
+                document.getElementById("pesoValorAbastecimiento").value = "";
                 document.getElementById("cantidad").value = "";
+                document.getElementById("unidadEmpaqueAbastecimiento").value = "";
+                document.getElementById("procedencia").value = "";
                 document.getElementById("frecuenciaCompra").value = "";
+
+                // Limpiar campos de Venta (Canasta Familiar)
                 document.getElementById("precioVentaCanasta").value = "";
                 document.getElementById("unidadEmpaqueCanasta").value = "";
+                document.getElementById("unidadMedidaCanasta").value = ""; 
 
                 // Limpiar campos de Local Externo
                 document.getElementById("precioVentaExterno").value = "";
@@ -582,33 +618,59 @@
                 grupo,
                 producto,
                 canasta: esCanasta ? "Sí" : "No",
-                tipoPunto: tipoDePuntoGlobal // Guardamos el tipo para referencia
+                tipoPunto: tipoDePuntoGlobal 
             };
 
             // VALIDACIÓN Y ASIGNACIÓN PARA LOCAL DENTRO DE LA PLAZA (LOCAL PLAZA)
             if (tipoDePuntoGlobal === 'plaza') {
-                const pesoLibras = document.getElementById("pesoLibras").value;
-                const unidadMedida = document.getElementById("unidadMedida").value;
+                // ** Nuevos campos de Abastecimiento **
+                const unidadMedidaAbastecimiento = document.getElementById("unidadMedidaAbastecimiento").value;
+                const pesoValorAbastecimiento = document.getElementById("pesoValorAbastecimiento").value;
                 const cantidad = document.getElementById("cantidad").value;
+                const unidadEmpaqueAbastecimiento = document.getElementById("unidadEmpaqueAbastecimiento").value;
+                const procedencia = document.getElementById("procedencia").value;
                 const frecuenciaCompra = document.getElementById("frecuenciaCompra").value;
 
-                if (!pesoLibras || !unidadMedida || !cantidad || !frecuenciaCompra) {
-                    alert("Complete los campos: Peso, Unidad de medida, Cantidad y Frecuencia de compra.");
+                // Validación de Abastecimiento
+                if (!unidadMedidaAbastecimiento || !pesoValorAbastecimiento || !cantidad || !unidadEmpaqueAbastecimiento || !procedencia || !frecuenciaCompra) {
+                    alert("Complete todos los campos de Abastecimiento: Unidad de medida, Peso/Volumen, Cantidad, Unidad de empaque, Procedencia y Frecuencia de compra.");
                     return;
                 }
 
-                Object.assign(obj, { pesoLibras, unidadMedida, cantidad, frecuenciaCompra });
+                Object.assign(obj, { 
+                    unidadMedidaAbastecimiento, 
+                    pesoValorAbastecimiento, 
+                    cantidad, 
+                    unidadEmpaqueAbastecimiento, 
+                    procedencia, 
+                    frecuenciaCompra 
+                });
 
                 if (esCanasta) {
                     const precioVentaCanasta = document.getElementById("precioVentaCanasta").value;
+                    const unidadMedidaCanasta = document.getElementById("unidadMedidaCanasta").value; 
                     const unidadEmpaqueCanasta = document.getElementById("unidadEmpaqueCanasta").value;
-                    if (!precioVentaCanasta || !unidadEmpaqueCanasta) {
-                        alert("Complete los Datos adicionales: Precio de venta y Unidad de empaque.");
+                    
+                    // Validación de Venta (solo si es Canasta)
+                    if (!precioVentaCanasta || !unidadMedidaCanasta || !unidadEmpaqueCanasta) {
+                        alert("Complete los Datos de Venta: Precio, Unidad de medida y Unidad de empaque.");
                         return;
                     }
-                    Object.assign(obj, { precioVenta: precioVentaCanasta, unidadEmpaque: unidadEmpaqueCanasta });
+                    
+                    // Asignación de Venta
+                    Object.assign(obj, { 
+                        precioVenta: precioVentaCanasta, 
+                        unidadMedida: unidadMedidaCanasta, 
+                        unidadEmpaque: unidadEmpaqueCanasta 
+                    });
+
                 } else {
-                    Object.assign(obj, { precioVenta: "N/A", unidadEmpaque: "N/A" });
+                    // Para NO canasta, los campos de venta se marcan N/A
+                    Object.assign(obj, { 
+                        precioVenta: "N/A", 
+                        unidadMedida: "N/A", 
+                        unidadEmpaque: "N/A" 
+                    });
                 }
 
             // VALIDACIÓN Y ASIGNACIÓN PARA LOCAL EXTERNO
@@ -629,8 +691,12 @@
                     precioVenta: precioVentaExterno,
                     unidadMedida: unidadMedidaExterno,
                     unidadEmpaque: unidadEmpaqueExterno,
-                    pesoLibras: "N/A", // Se dejan como N/A para externo
+                    // Campos de Abastecimiento N/A para externo
+                    unidadMedidaAbastecimiento: "N/A",
+                    pesoValorAbastecimiento: "N/A",
                     cantidad: "N/A",
+                    unidadEmpaqueAbastecimiento: "N/A",
+                    procedencia: "N/A",
                     frecuenciaCompra: "N/A"
                 });
             }
@@ -655,27 +721,50 @@
             tbody.innerHTML = "";
 
             listaProductos.forEach((p, index) => {
-                let precioColumna = "";
-                let cantidadColumna = "";
+                let abastecimientoColumna = "";
+                let ventaColumna = "";
 
                 if (p.tipoPunto === 'plaza') {
-                    // LOCAL PLAZA: Muestra Precio/Peso/Unidad de Empaque (si es canasta) y Cantidad/Frecuencia
-                    precioColumna = p.canasta === "Sí" ? `Precio: $${p.precioVenta}<br>Empaque: ${p.unidadEmpaque}` : `Peso: ${p.pesoLibras} ${p.unidadMedida}`;
-                    cantidadColumna = `Cantidad: ${p.cantidad}<br>Frecuencia: ${p.frecuenciaCompra}`;
+                    // LOCAL PLAZA
+                    // Datos de Abastecimiento (Ahora incluye los campos nuevos)
+                    abastecimientoColumna = `
+                        Peso/Vol: <b>${p.pesoValorAbastecimiento} ${p.unidadMedidaAbastecimiento}</b><br>
+                        Cant.: <b>${p.cantidad}</b><br>
+                        Empaque: <b>${p.unidadEmpaqueAbastecimiento}</b><br>
+                        Procedencia: <b>${p.procedencia}</b><br>
+                        Frecuencia: <b>${p.frecuenciaCompra}</b>
+                    `;
+
+                    if (p.canasta === "Sí") {
+                        // Datos de Venta (Solo si es Canasta)
+                        ventaColumna = `
+                            Precio: <b>$${p.precioVenta}</b><br>
+                            Unidad Medida: <b>${p.unidadMedida}</b><br>
+                            Unidad Empaque: <b>${p.unidadEmpaque}</b>
+                        `;
+                    } else {
+                        // Datos de Venta (Si NO es Canasta)
+                        ventaColumna = `N/A`;
+                    }
+
                 } else if (p.tipoPunto === 'externo') {
-                    // LOCAL EXTERNO: Muestra Precio/Unidad de Empaque (Solo canasta) y N/A para Cantidad/Frecuencia
-                    precioColumna = `Precio: $${p.precioVenta}<br>Empaque: ${p.unidadEmpaque}`;
-                    cantidadColumna = `Medida: ${p.unidadMedida}<br>Cantidad: N/A`;
+                    // LOCAL EXTERNO (Abastecimiento N/A, Venta siempre activa)
+                    abastecimientoColumna = `N/A`;
+                    ventaColumna = `
+                        Precio: <b>$${p.precioVenta}</b><br>
+                        Unidad Medida: <b>${p.unidadMedida}</b><br>
+                        Unidad Empaque: <b>${p.unidadEmpaque}</b>
+                    `;
                 }
 
+                // AJUSTE EN LA FILA PARA USAR LAS NUEVAS COLUMNAS
                 let fila = `
                 <tr>
                     <td>${p.grupo}</td>
                     <td>${p.producto}</td>
                     <td>${p.canasta}</td>
-                    <td>${precioColumna}</td>
-                    <td>${p.unidadMedida}</td>
-                    <td>${cantidadColumna}</td>
+                    <td style="background:#e0f7fa;">${abastecimientoColumna}</td>
+                    <td style="background:#fff3e0;">${ventaColumna}</td>
                     <td>
                         <button class="btn" style="margin:2px;" onclick="abrirModalProducto('edit', ${index})">Editar</button>
                         <button class="btn_1" style="margin:2px;" onclick="eliminarProducto(${index})">Eliminar</button>
@@ -700,14 +789,19 @@
 
                 // Cargar campos específicos
                 if (p.tipoPunto === 'plaza') {
-                    document.getElementById("pesoLibras").value = p.pesoLibras;
-                    document.getElementById("unidadMedida").value = p.unidadMedida;
+                    // Cargar campos de Abastecimiento
+                    document.getElementById("unidadMedidaAbastecimiento").value = p.unidadMedidaAbastecimiento;
+                    document.getElementById("pesoValorAbastecimiento").value = p.pesoValorAbastecimiento;
                     document.getElementById("cantidad").value = p.cantidad;
+                    document.getElementById("unidadEmpaqueAbastecimiento").value = p.unidadEmpaqueAbastecimiento;
+                    document.getElementById("procedencia").value = p.procedencia;
                     document.getElementById("frecuenciaCompra").value = p.frecuenciaCompra;
 
                     if (p.canasta === 'Sí') {
+                        // Cargar campos de Venta
                         document.getElementById("precioVentaCanasta").value = p.precioVenta;
                         document.getElementById("unidadEmpaqueCanasta").value = p.unidadEmpaque;
+                        document.getElementById("unidadMedidaCanasta").value = p.unidadMedida;
                         document.getElementById("camposCanastaPlaza").style.display = "block";
                     } else {
                         document.getElementById("camposCanastaPlaza").style.display = "none";
