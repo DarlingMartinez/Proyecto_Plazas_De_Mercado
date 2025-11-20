@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Encuesta - Abastecimiento</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -25,6 +28,21 @@
         /* Tabla */
         #tablaProductos th, #tablaProductos td { padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 12px; }
         #tablaProductos th { background-color: #f2f2f2; }
+        /* --- Estilos para el Buscador --- */
+       .select2-container { width: 100% !important; margin-top: 5px; }
+       .select2-container .select2-selection--single { height: 38px; padding: 5px; border: 1px solid #ccc; }
+       .select2-selection__arrow { height: 36px !important; }
+       .select2-container--open { z-index: 9999 !important; }
+
+   /* Estilo de la Lupa dentro del buscador */
+    .select2-search__field {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    padding-left: 35px !important;
+    border-radius: 20px !important;
+    border: 1px solid #ddd !important;
+}
     </style>
 </head>
 <body>
@@ -872,6 +890,137 @@ eliminarProducto = function(i) {
         guardarEstadoLocal(); // <--- AGREGADO
     } 
 };
+        /* --- CONFIGURACIÓN DEL BUSCADOR Y CORRECCIÓN DE LÓGICA --- */
+$(document).ready(function() {
+    
+    // 1. Inicializar buscador SOLO en Encuestador y Localidad
+    $('#encuestador, #localidad').select2({
+        placeholder: "Seleccione o busque...",
+        width: '100%'
+    });
+
+    // 2. Inicializar buscador SOLO en Grupo y Producto (dentro del Modal)
+    $('#grupoAlimentario').select2({
+        dropdownParent: $('#modalProducto'),
+        placeholder: "Seleccione grupo...",
+        width: '100%'
+    });
+
+    // AQUÍ ESTÁ LA MAGIA PARA QUE FUNCIONE LA CANASTA FAMILIAR
+    $('#producto').select2({
+        dropdownParent: $('#modalProducto'),
+        placeholder: "Seleccione producto...",
+        width: '100%'
+    }).on('select2:select', function (e) {
+        // "Puente": Cuando Select2 cambia, forzamos el evento nativo
+        // para que tu función de 'avisoCanasta' se entere.
+        document.getElementById("producto").dispatchEvent(new Event('change'));
+    });
+
+    // Truco visual: Poner "Buscar..." dentro de la caja de texto al abrir
+    $(document).on('select2:open', function(e) {
+        document.querySelector('.select2-search__field')?.setAttribute('placeholder', 'Buscar...');
+    });
+});
+
+/* --- ACTUALIZACIÓN IMPORTANTE DE FUNCIONES --- */
+// Necesitamos redefinir estas dos funciones para que el buscador
+// se entere cuando cambiamos las opciones por código.
+
+// 1. Versión compatible de cargarPlazas (SIN BUSCADOR EN PLAZA, PERO ACTUALIZANDO SELECT)
+const _oldCargarPlazas = cargarPlazas; // Guardamos referencia por si acaso
+cargarPlazas = function() {
+    const localidad = document.getElementById("localidad").value;
+    const plazaSelect = document.getElementById("plaza");
+    plazaSelect.innerHTML = `<option value="">Seleccione una plaza</option>`;
+    
+    if (localidad && plazasPorLocalidad[localidad]) {
+        plazasPorLocalidad[localidad].forEach(plaza => {
+            const option = document.createElement("option");
+            option.value = plaza;
+            option.textContent = plaza;
+            plazaSelect.appendChild(option);
+        });
+    }
+    // Plaza NO tiene Select2, así que no hacemos nada extra aquí.
+}
+
+// 2. Versión compatible de actualizarListaProductos (CRÍTICO)
+actualizarListaProductos = function() {
+    const grupo = document.getElementById("grupoAlimentario").value;
+    const selectProducto = document.getElementById("producto");
+    
+    // Limpiamos el HTML del select
+    selectProducto.innerHTML = `<option value="">Seleccione un producto</option>`;
+
+    if (grupo && productosPorGrupo[grupo]) {
+        productosPorGrupo[grupo].forEach(p => {
+            if (tipoDePuntoGlobal === 'externo' && !productosCanasta.includes(p.toUpperCase())) return;
+            const opt = document.createElement("option");
+            opt.value = p;
+            opt.textContent = p;
+            selectProducto.appendChild(opt);
+        });
+    }
+    // AVISAMOS AL BUSCADOR que las opciones cambiaron
+    $('#producto').val(null).trigger('change.select2');
+    // También limpiamos el aviso de canasta visualmente
+    document.getElementById("avisoCanasta").style.display = "none";
+    document.getElementById("camposCanastaPlaza").style.display = "none";
+}
+
+// 3. Pequeño ajuste al Editar para que el buscador muestre el valor guardado
+const _oldEditarProducto = editarProducto;
+editarProducto = function(i) {
+    let p = listaProductos[i];
+    document.getElementById("grupoAlimentario").value = p.grupo;
+    // Avisar al buscador de Grupo que cambió el valor
+    $('#grupoAlimentario').trigger('change'); 
+    
+    actualizarListaProductos();
+
+    setTimeout(() => {
+        // Poner el valor en el input
+        document.getElementById("producto").value = p.producto;
+        // Avisar al buscador de Producto y DISPARAR LA VALIDACIÓN DE CANASTA
+        $('#producto').trigger('change').trigger('select2:select'); 
+
+        // ... Resto de lógica de llenado de campos (Copiamos tu lógica original) ...
+        if (p.tipoPunto === 'plaza') {
+            document.getElementById("unidadMedidaAbastecimiento").value = p.unidadMedidaAbastecimiento;
+            document.getElementById("pesoValorAbastecimiento").value = p.pesoValorAbastecimiento;
+            document.getElementById("cantidad").value = p.cantidad;
+            document.getElementById("unidadEmpaqueAbastecimiento").value = p.unidadEmpaqueAbastecimiento;
+            
+            const esProcedenciaEstandar = ["BOGOTÁ", "CUNDINAMARCA", "OTRO"].includes(p.procedencia);
+            if (esProcedenciaEstandar && p.procedencia !== "OTRO") {
+                    document.getElementById("procedencia").value = p.procedencia;
+                    document.getElementById("campoProcedenciaOtro").style.display = "none";
+            } else {
+                    document.getElementById("procedencia").value = "OTRO";
+                    document.getElementById("campoProcedenciaOtro").style.display = "block";
+                    document.getElementById("procedenciaOtro").value = p.procedencia;
+            }
+            document.getElementById("frecuenciaCompra").value = p.frecuenciaCompra;
+
+            if (p.canasta === 'Sí') {
+                document.getElementById("precioVentaCanasta").value = p.precioVenta;
+                document.getElementById("unidadEmpaqueCanasta").value = p.unidadEmpaque;
+                document.getElementById("unidadMedidaCanasta").value = p.unidadMedida;
+                document.getElementById("camposCanastaPlaza").style.display = "block";
+            }
+        } else if (p.tipoPunto === 'externo') {
+            document.getElementById("precioVentaExterno").value = p.precioVenta;
+            document.getElementById("unidadMedidaExterno").value = p.unidadMedida;
+            document.getElementById("unidadEmpaqueExterno").value = p.unidadEmpaque;
+        }
+        document.getElementById("editIndex").value = i;
+        document.getElementById("tituloModal").textContent = "Editar Producto";
+        
+        // Forzamos una vez más el evento change nativo para asegurar que salga el aviso rojo
+        document.getElementById("producto").dispatchEvent(new Event('change'));
+    }, 100);
+}
     </script>
 </body>
 </html>
