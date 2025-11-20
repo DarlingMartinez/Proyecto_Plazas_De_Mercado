@@ -699,6 +699,7 @@
             })
             .then(response => {
                 alert("¡Datos enviados correctamente al Excel!");
+                localStorage.removeItem("encuesta_backup_data"); // Borrar memoria
                 listaProductos = []; mostrarTabla();
                 document.getElementById("pantallaAgregarProductos").style.display = "none";
                 document.getElementById("mainFormContainer").style.display = "block";
@@ -715,6 +716,118 @@
                 btn.disabled = false; btn.textContent = textoOriginal;
             });
         }
+        /* --- LÓGICA DE PERSISTENCIA (Auto-Guardado) --- */
+
+// 1. Función para guardar todo el estado actual
+function guardarEstadoLocal() {
+    // Determinar en qué paso visual estamos
+    let pasoActual = 'step1';
+    if(document.getElementById('step2').classList.contains('active')) pasoActual = 'step2';
+    if(document.getElementById('pantallaAgregarProductos').style.display === 'block') pasoActual = 'productos';
+
+    const estado = {
+        // Datos Generales
+        encuestador: document.getElementById("encuestador").value,
+        fecha: document.getElementById("fecha").value,
+        localidad: document.getElementById("localidad").value,
+        plaza: document.getElementById("plaza").value,
+        
+        // Datos del Punto
+        tipoPunto: document.getElementById("tipoPunto").value,
+        numLocal: document.getElementById("numLocal").value,
+        refLocalExterno: document.getElementById("refLocalExterno").value,
+        
+        // Variables Globales
+        listaProductos: listaProductos,
+        tipoDePuntoGlobal: tipoDePuntoGlobal,
+        pasoVisual: pasoActual
+    };
+
+    localStorage.setItem("encuesta_backup_data", JSON.stringify(estado));
+}
+
+// 2. Función para restaurar los datos al abrir la página
+function cargarEstadoLocal() {
+    const dataGuardada = localStorage.getItem("encuesta_backup_data");
+    if (!dataGuardada) return; // No hay nada guardado, iniciar normal
+
+    const estado = JSON.parse(dataGuardada);
+
+    // Restaurar variables globales
+    listaProductos = estado.listaProductos || [];
+    tipoDePuntoGlobal = estado.tipoDePuntoGlobal || "";
+
+    // Restaurar Inputs simples
+    document.getElementById("encuestador").value = estado.encuestador;
+    document.getElementById("fecha").value = estado.fecha;
+    document.getElementById("localidad").value = estado.localidad;
+    
+    // Cargar plazas y luego seleccionar la correcta
+    cargarPlazas(); 
+    document.getElementById("plaza").value = estado.plaza;
+
+    document.getElementById("tipoPunto").value = estado.tipoPunto;
+    // Disparar evento para mostrar/ocultar campos de local
+    document.getElementById("tipoPunto").dispatchEvent(new Event('change')); 
+    
+    document.getElementById("numLocal").value = estado.numLocal;
+    document.getElementById("refLocalExterno").value = estado.refLocalExterno;
+
+    // Restaurar Pantalla Correcta
+    if (estado.pasoVisual === 'step2') {
+        nextStep(1); // Simular ir al paso 2
+    } else if (estado.pasoVisual === 'productos') {
+        // Simular navegación forzada a productos
+        document.getElementById("mainFormContainer").style.display = "none";
+        document.getElementById("pantallaAgregarProductos").style.display = "block";
+        
+        // Rellenar cabecera de información
+        document.getElementById("infoEncuestador").textContent = "Encuestador: " + estado.encuestador;
+        document.getElementById("infoFecha").textContent = "Fecha: " + estado.fecha;
+        document.getElementById("infoLocalidad").textContent = "Localidad: " + estado.localidad;
+        document.getElementById("infoPlaza").textContent = "Plaza: " + estado.plaza;
+        
+        if (estado.tipoPunto === 'plaza') {
+            document.getElementById("infoPunto").textContent = "Local Plaza #" + estado.numLocal;
+        } else {
+            document.getElementById("infoPunto").textContent = "Local Externo: " + estado.refLocalExterno;
+        }
+
+        mostrarTabla(); // Pintar la tabla recuperada
+    }
+}
+
+// 3. Escuchadores de eventos para guardar automáticamente ante cualquier cambio
+document.addEventListener("DOMContentLoaded", () => {
+    cargarEstadoLocal(); // Intentar recuperar datos al iniciar
+
+    // Guardar cada vez que se escriba o cambie algo en cualquier input/select
+    const todosLosInputs = document.querySelectorAll('input, select');
+    todosLosInputs.forEach(el => {
+        el.addEventListener('change', guardarEstadoLocal);
+        el.addEventListener('input', guardarEstadoLocal);
+    });
+});
+
+// Sobreescribir funciones clave para asegurar guardado al hacer clic en botones
+const _origGuardarProducto = guardarProducto;
+guardarProducto = function() {
+    _origGuardarProducto(); // Ejecutar la original
+    guardarEstadoLocal();   // Guardar después
+};
+
+const _origEliminarProducto = eliminarProducto;
+eliminarProducto = function(i) {
+    // Como eliminarProducto en tu código tiene un confirm, necesitamos inyectarnos con cuidado
+    // o simplemente volver a definirla si es más facil.
+    // Para simplificar, usaremos un "Observador" en la listaProductos en el bloque anterior.
+    // Pero lo más seguro es llamar a guardarEstadoLocal() dentro de eliminarProducto manualmente.
+    if (confirm("¿Eliminar producto?")) { 
+        listaProductos.splice(i, 1); 
+        mostrarTabla(); 
+        guardarEstadoLocal(); // <--- AGREGADO
+    } 
+};
     </script>
 </body>
 </html>
