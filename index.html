@@ -34,7 +34,11 @@
             box-sizing: border-box;
         }
         #tablaProductos th { background-color: #f2f2f2; font-size: 13px; }
-        
+        .table-responsive {
+    overflow-x: auto; 
+    margin-top: 10px;
+    max-width: 100%;
+    padding-bottom: 10px; }
         /* Estilos para celdas específicas */
         /* Celda de GRUPO (Rowspan) */
         #tablaProductos td:first-child { 
@@ -42,6 +46,12 @@
             font-weight: bold; 
             width: 15%; 
         }
+        #tablaProductos { 
+    min-width: 800px; /* Ancho forzado: 800px para que los campos quepan y active el scroll */
+    width: 800px;
+    border-collapse: collapse; 
+    table-layout: fixed; 
+}
         
         /* Celda de PRODUCTO - AJUSTE PRINCIPAL */
         #tablaProductos td:nth-child(2) { 
@@ -145,16 +155,15 @@
             <button class="btn" onclick="goToProductsScreen()">Siguiente</button>
         </div>
     </div>
-
     <div class="container" id="pantallaAgregarProductos" style="display:none;">
         <div style="font-size:16px; font-weight:bold; margin-bottom:20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
             <p style="margin: 0;"><span id="infoEncuestador"></span> - <span id="infoFecha"></span></p>
             <p style="margin: 5px 0 0 0;"><span id="infoLocalidad"></span>, <span id="infoPlaza"></span></p>
             <p style="margin: 5px 0 0 0;">Punto: <span id="infoPunto"></span></p>
         </div>
-
-        <table id="tablaProductos" border="1" style="margin-top:10px; width:100%; border-collapse:collapse; table-layout: fixed; display:none;">
-            <thead>
+        <div class="table-responsive">
+            <table id="tablaProductos" border="1" style="margin-top:10px; border-collapse:collapse;">
+                <thead>
                 <tr style="background:#f0f0f0;">
                     <th style="width:15%;">Grupo</th>
                     <th style="width:20%;">Producto</th>
@@ -167,7 +176,7 @@
             <tbody id="tbodyProductos">
                 </tbody>
         </table>
-   
+        </div>
         <center>
             <button class="btn_1" onclick="cancelarEncuesta()" style="margin-top:20px; padding:12px 25px; font-size:16px;">
                 Cancelar
@@ -211,19 +220,13 @@
             { grupo: "CÁRNICOS", producto: "LOMO", canasta: "No" },
             { grupo: "CÁRNICOS", producto: "PIERNA", canasta: "No" },
             { grupo: "CÁRNICOS", producto: "SOBREBARRIGA", canasta: "No" },
-            
-            // POLLO
-            { grupo: "POLLO", producto: "POLLO/PECHUGA", canasta: "No" },
-            
-            // PESCADO
-            { grupo: "PESCADO", producto: "PESCADO/PRECIO MOJARRA", canasta: "No" },
-            
-            // HUEVOS
-            { grupo: "HUEVOS", producto: "HUEVOS", canasta: "Sí" },
+            { grupo: "CÁRNICOS", producto: "POLLO/PECHUGA", canasta: "No" },
+            { grupo: "CÁRNICOS", producto: "PESCADO", canasta: "No" },
+            { grupo: "CÁRNICOS", producto: "HUEVOS", canasta: "Sí" },
             
             // LÁCTEOS
             { grupo: "LÁCTEOS", producto: "LECHE", canasta: "Sí" },
-            { grupo: "LÁCTEOS", producto: "QUESO/Gral. Precio queso campesino", canasta: "Sí" },
+            { grupo: "LÁCTEOS", producto: "QUESO", canasta: "Sí" },
             { grupo: "LÁCTEOS", producto: "YOGURTH", canasta: "No" },
             { grupo: "LÁCTEOS", producto: "CUAJADA", canasta: "No" },
             
@@ -246,14 +249,14 @@
             { grupo: "FRUTAS", producto: "PERA", canasta: "No" },
             { grupo: "FRUTAS", producto: "UVA", canasta: "No" },
             { grupo: "FRUTAS", producto: "NARANJA", canasta: "Sí" },
-            { grupo: "FRUTAS", producto: "PLÁTANO Gral/Precio Verde y Maduro", canasta: "No" },
+            { grupo: "FRUTAS", producto: "PLÁTANO Gral", canasta: "No" },
             
             // HIERBAS
             { grupo: "HIERBAS", producto: "CILANTRO", canasta: "Sí" }, 
-            
+            { grupo: "HIERBAS", producto: "HIERBAS", canasta: "No" },
             // TUBÉRCULOS
             { grupo: "TUBÉRCULOS", producto: "ARRACACHA", canasta: "No" },
-            { grupo: "TUBÉRCULOS", producto: "PAPA/gral. Precio pastusa y criolla", canasta: "Sí" },
+            { grupo: "TUBÉRCULOS", producto: "PAPA", canasta: "Sí" },
             { grupo: "TUBÉRCULOS", producto: "YUCA", canasta: "Sí" },
             
             // VERDURAS
