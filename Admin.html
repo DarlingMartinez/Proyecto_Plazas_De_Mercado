@@ -28,15 +28,17 @@
 <div class="container">
   <h2>Gestión de Datos</h2>
   
-  <div id="loader" class="loader">Procesando solicitud...</div>
+  
 
   <button class="btn-abastecimiento" onclick="ejecutarProceso()">
     Generar Consolidado de Abastecimiento
   </button>
+  <div id="estado" style="margin-top:10px; font-weight:bold;"></div>
 
   <button class="btn-comparativo" onclick="llamarGoogleScript('run_python')">
     Ejecutar Comparativo
   </button>
+  <div id="loader" class="loader">Procesando solicitud...</div>
 
   <p id="status"></p>
 </div>
