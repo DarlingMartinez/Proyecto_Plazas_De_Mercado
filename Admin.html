@@ -72,7 +72,7 @@ function esperarFinalizacion() {
             "✅ Proceso finalizado. Descargando Excel...";
 
           // 🔽 DESCARGA AUTOMÁTICA
-          descargarExcel();
+          descargarExcelAbast();
 
           document.getElementById("btnEjecutar").disabled = false;
         }
@@ -80,7 +80,7 @@ function esperarFinalizacion() {
   }, 3000);
 }
 
-function descargarExcel() {
+function descargarExcelAbast() {
   const url =
     `https://docs.google.com/spreadsheets/d/${EXCEL_ID}/export?format=xlsx`;
 
