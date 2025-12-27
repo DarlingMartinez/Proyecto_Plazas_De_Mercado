@@ -30,8 +30,8 @@
   
   <div id="loader" class="loader">Procesando solicitud...</div>
 
-  <button class="btn-abastecimiento" onclick="llamarGoogleScript('abastecimiento')">
-    Proceso de Abastecimiento
+  <button class="btn-abastecimiento" onclick="ejecutarProceso()">
+    Generar Consolidado de Abastecimiento
   </button>
 
   <button class="btn-comparativo" onclick="llamarGoogleScript('run_python')">
@@ -43,6 +43,52 @@
 
 <script>
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwB6TPsLMgN6aBfQx9nWCmaXcV_8pnOwal2QceVvf_k54wGnsPVrts5Xjc_Pki2yhTr/exec";
+
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZ4Vrdv-uLE41_AEV4Q7SCTXTZKKOKenk3YukNaUPg0QCI4EbJZNXaQomGHm6Sp1XDNw/exec";
+const EXCEL_ID = "19QM8vpZLqTgDqpskqSsj2BeerjMguob8oHMfxTEH1dA";
+
+function ejecutarProceso() {
+  const estadoDiv = document.getElementById("estado");
+  const btn = document.getElementById("btnEjecutar");
+
+  btn.disabled = true;
+  estadoDiv.textContent = "⏳ Proceso en ejecución...";
+
+  fetch(SCRIPT_URL, { method: "POST" })
+    .then(() => esperarFinalizacion());
+}
+
+function esperarFinalizacion() {
+  const intervalo = setInterval(() => {
+    fetch(SCRIPT_URL)
+      .then(res => res.text())
+      .then(estado => {
+        if (estado === "finalizado") {
+          clearInterval(intervalo);
+
+          document.getElementById("estado").textContent =
+            "✅ Proceso finalizado. Descargando Excel...";
+
+          // 🔽 DESCARGA AUTOMÁTICA
+          descargarExcel();
+
+          document.getElementById("btnEjecutar").disabled = false;
+        }
+      });
+  }, 3000);
+}
+
+function descargarExcel() {
+  const url =
+    `https://docs.google.com/spreadsheets/d/${EXCEL_ID}/export?format=xlsx`;
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
   async function llamarGoogleScript(accion) {
   const status = document.getElementById("status");
